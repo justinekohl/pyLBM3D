@@ -10,7 +10,7 @@ import QS.QuasiStatic as QS
 import QS.QuasiStaticBC as QSBC
 
 nameOfSimulation = "Block3D"
-pathToVTK = "vtk/"
+pathToVTK = "E:/git/vtk/"
 
 lam = 1.0
 mue = 1.0
@@ -74,7 +74,7 @@ while t <= tMax:
         return np.array([ clocal * coordinates[0], - nu * clocal * coordinates[1], - nu * clocal * coordinates[2] ])
 
     visited = np.zeros((maxX, maxY, maxZ), dtype=bool)
-    # TODO for fixed BC use bounce back, halfway? 
+    # TODO for fixed BC use bounce back, halfway?
     #xmin
     [f,u, visited] = QSBC.applyDirichletBoundaryConditions(f,dx,dt,rho0,rho, w,u,uBdFromCoordinates,visited,'x',0)
 
@@ -110,7 +110,7 @@ while t <= tMax:
      # compute rho
     rho = Core.computeRho(f)
     u = QS.computeU(u, rho0, j, jOld, dt) # TODO rho0 more stable or use rho?
-
+    # TODO prevent overwriting at Boundary, why ux not constant for x = const.?
    
     # compute strain, stress, stress divergence
     gradU = Util.computeGradientU(u,dx)

@@ -150,7 +150,8 @@ def computeU(uOldArg, rho0Arg, jArg, jOldArg, dtArg):
     for i in range(0, len(uOldArg)):  # f0
         for j in range(0, len(uOldArg[0])):
             for k in range(0, len(uOldArg[0][0])):
-                if(i == 0 or j == 0 or k == 0 or i == len(uOldArg) or j == len(uOldArg[0]) or k == len(uOldArg[0][0])):
+                #if(i == 0 or j == 0 or k == 0 or i == len(uOldArg) or j == len(uOldArg[0]) or k == len(uOldArg[0][0])):
+                if(i == 0 or j == 0 or k == 0 or i == len(uOldArg)-1 or j == len(uOldArg[0])-1 or k == len(uOldArg[0][0])-1):
                     uNew[i][j][k] = uOldArg[i][j][k]
                 else:
                     uNew[i][j][k] = uOldArg[i][j][k] + (jArg[i][j][k] + jOldArg[i][j][k]) / rho0Arg / 2.0 * dtArg
