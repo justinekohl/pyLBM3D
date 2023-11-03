@@ -109,7 +109,7 @@ while t <= tMax:
     j = Ex.j(Core.firstMoment(f, cc), dt, g)
      # compute rho
     rho = Core.computeRho(f)
-    u = QS.computeU(u, rho0, j, jOld, dt) # TODO rho0 more stable or use rho?
+    u = QS.computeU(u, rho0, j, jOld, dt, v, rho) # TODO rho0 more stable or use rho?
     # TODO prevent overwriting at Boundary, why ux not constant for x = const.?
    
     # compute strain, stress, stress divergence

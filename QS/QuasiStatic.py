@@ -137,7 +137,7 @@ def v(rhoArg, jArg):
     return vOut
 
 
-def computeU(uOldArg, rho0Arg, jArg, jOldArg, dtArg):
+def computeU(uOldArg, rho0Arg, jArg, jOldArg, dtArg, vArg, rhoArg):
     '''
     :param uOldArg: the displacement from the last time step in lattice dimensions (m,n,o,3)
     :param rho0Arg: the original density, a scalar
@@ -153,10 +153,13 @@ def computeU(uOldArg, rho0Arg, jArg, jOldArg, dtArg):
                 #if(i == 0 or j == 0 or k == 0 or i == len(uOldArg) or j == len(uOldArg[0]) or k == len(uOldArg[0][0])):
                 if(i == 0 or j == 0 or k == 0 or i == len(uOldArg)-1 or j == len(uOldArg[0])-1 or k == len(uOldArg[0][0])-1):
                     uNew[i][j][k] = uOldArg[i][j][k]
-                else:
+                else: 
                     uNew[i][j][k] = uOldArg[i][j][k] + (jArg[i][j][k] + jOldArg[i][j][k]) / rho0Arg / 2.0 * dtArg
                     # TODO jArg and rho[i,j,k]
-                    # TODO use v instead of jOld
+                    # TODO use v instead of jOld ### no difference between using v
+                    #uNew[i][j][k] = uOldArg[i][j][k] + vArg[i][j][k] * dtArg
+                    
+                    #uNew[i][j][k] = uOldArg[i][j][k] + (jArg[i][j][k] + jOldArg[i][j][k]) / rhoArg[i,j,k] / 2.0 * dtArg
     return uNew
 
 

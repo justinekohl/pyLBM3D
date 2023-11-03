@@ -1,6 +1,6 @@
 import numpy as np
 import QS.QuasiStatic as QS
-
+import QS.ComputeDiv as div
 
 def lattice(L,n):
   '''
@@ -90,14 +90,15 @@ n_test = [2,4,8,16,32,64]
 e_global = np.zeros((len(n_test)),dtype=np.double)
 
 # test cube L x L x L 
-L=1.0
+L=1.0 
 
 nn=0 # index for global error
 for n in n_test:
     [dx, x] = lattice(L, n)
 
     [sigma, divOfSigmaAnalytic] = sigmaAndDivSigmaAnalytic(x,L, sigmaCubic, divSigmaCubic)
-    divOfSigma= QS.divOfSigma(sigma,dx)
+    #divOfSigma= QS.divOfSigma(sigma,dx)                    ##### with gradient-function
+    divOfSigma= div.ComupteDivergence(sigma,dx)   ##### with finite difference schemes
     e_global[nn] = globalError(divOfSigma, divOfSigmaAnalytic)
     nn = nn+1
 
