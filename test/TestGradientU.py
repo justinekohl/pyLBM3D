@@ -1,5 +1,6 @@
 import numpy as np
 import Util
+import QS.ComputeGrad as Grad
 
 
 def lattice(L,n):
@@ -117,7 +118,8 @@ for n in n_test:
     [dx, x] = lattice(L, n)
 
     [u, gradientOfUAnalytic] = uAndGradientUAnalytic(x,L, uCubic, gradUCubic)
-    gradientOfU = Util.computeGradientU(u,dxArg=dx)
+    #gradientOfU = Util.computeGradientU(u,dxArg=dx)
+    gradientOfU = Grad.ComupteGradientU(u,dx)
     e_global[nn] = globalError(gradientOfU, gradientOfUAnalytic)
     nn = nn+1
 
