@@ -1,0 +1,3 @@
+[submodule "findiff"]
+	path = findiff
+	url = git@github.com:maroba/findiff.git
