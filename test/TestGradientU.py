@@ -18,12 +18,12 @@ def uAndGradientUAnalytic(x,L, uFunction, gradUFunction):
     n = len(x)-1 # 
     kk = len(x[0]) -1
     l = len(x[0][0])-1
-    u = np.zeros((n+1, kk+1, l+1,3), dtype=np.double)
+    u = np.empty((n+1, kk+1, l+1,3), dtype=np.double)
     for i in range(0, n+1):
       for j in range(0, kk+1):
           for k in range(0, l+1):
              u[i,j,k] = uFunction(x[i,j,k,0], x[i,j,k,1], x[i,j,k,2]) 
-    gradientOfUAnalytic =  np.zeros((n+1, n+1, n+1,3,3), dtype=np.double)
+    gradientOfUAnalytic =  np.empty((n+1, n+1, n+1,3,3), dtype=np.double)
     for i in range(0, n+1):
       for j in range(0, kk+1):
         for k in range(0, l+1):
@@ -35,21 +35,24 @@ def globalError(gradientOfU, gradientOfUAnalytic):
   n = len(gradientOfU)-1
   kk = len(gradientOfU[0]) -1
   l = len(gradientOfU[0][0])-1
-  e_local = np.zeros((n+1, kk+1, l+1), dtype=np.double)
   e_global = 0.0
+
+  print("global error ...", end='\r')
   for i in range(0, n+1):
     for j in range(0, kk+1):
       for k in range(0, l+1):
-        e_local[i,j,k] = np.sqrt( (gradientOfU[i,j,k,0,0] - gradientOfUAnalytic[i,j,k,0,0]) ** 2 +
-                                    (gradientOfU[i,j,k,0,1] - gradientOfUAnalytic[i,j,k,0,1]) ** 2 +
-                                    (gradientOfU[i,j,k,0,2] - gradientOfUAnalytic[i,j,k,0,2]) ** 2 +
-                                    (gradientOfU[i,j,k,1,0] - gradientOfUAnalytic[i,j,k,1,0]) ** 2 +
-                                    (gradientOfU[i,j,k,1,1] - gradientOfUAnalytic[i,j,k,1,1]) ** 2 +
-                                    (gradientOfU[i,j,k,1,2] - gradientOfUAnalytic[i,j,k,1,2]) ** 2 +
-                                    (gradientOfU[i,j,k,2,0] - gradientOfUAnalytic[i,j,k,2,0]) ** 2 +
-                                    (gradientOfU[i,j,k,2,1] - gradientOfUAnalytic[i,j,k,2,1]) ** 2 +
-                                    (gradientOfU[i,j,k,2,2] - gradientOfUAnalytic[i,j,k,2,2]) ** 2  )
-        e_global = e_global +  e_local[i,j,k]
+        e_local = np.sqrt( (gradientOfU[i,j,k,0,0] - gradientOfUAnalytic[i,j,k,0,0]) ** 2 +
+                           (gradientOfU[i,j,k,0,1] - gradientOfUAnalytic[i,j,k,0,1]) ** 2 +
+                           (gradientOfU[i,j,k,0,2] - gradientOfUAnalytic[i,j,k,0,2]) ** 2 +
+                           (gradientOfU[i,j,k,1,0] - gradientOfUAnalytic[i,j,k,1,0]) ** 2 +
+                           (gradientOfU[i,j,k,1,1] - gradientOfUAnalytic[i,j,k,1,1]) ** 2 +
+                           (gradientOfU[i,j,k,1,2] - gradientOfUAnalytic[i,j,k,1,2]) ** 2 +
+                           (gradientOfU[i,j,k,2,0] - gradientOfUAnalytic[i,j,k,2,0]) ** 2 +
+                           (gradientOfU[i,j,k,2,1] - gradientOfUAnalytic[i,j,k,2,1]) ** 2 +
+                           (gradientOfU[i,j,k,2,2] - gradientOfUAnalytic[i,j,k,2,2]) ** 2  )
+        e_global += e_local
+  print("global error done")
+
   N = (n+1) * (kk+1) * (l+1)
   return e_global / ( N )
 
@@ -71,9 +74,8 @@ def gradUSin(x,y,z):
       duzDy = 2.0*np.pi / L * np.cos(2.0*np.pi * y / ( L ))
       duzDz = 2.0*np.pi / L * np.cos(2.0*np.pi * z / ( L ))
       return np.array([ [duxDx, duxDy, duxDz],
-                       [duyDx, duyDy, duyDz],
-                       [duzDx, duzDy, duzDz]
-         
+                        [duyDx, duyDy, duyDz],
+                        [duzDx, duzDy, duzDz]
       ])
 
 def uCubic(x,y,z):
@@ -99,37 +101,66 @@ def gradUCubic(x,y,z):
       duzDy = 0.0
       duzDz = 3.0 * c * z ** 2
       return np.array([ [duxDx, duxDy, duxDz],
-                       [duyDx, duyDy, duyDz],
-                       [duzDx, duzDy, duzDz]
-         
+                        [duyDx, duyDy, duyDz],
+                        [duzDx, duzDy, duzDz]
       ])
 
 ### Processing starts here
-#    
-n_test = [2,4,8,16,32,64]
-e_global = np.zeros((len(n_test)),dtype=np.double)
+# n_test = [8,16,32,64,128]     # 4th order FD needs more than 5 nodes
+n_test = np.logspace(3, 7, num=5, base=2, dtype=int)     # 4th order FD needs more than 5 nodes
 
 # test cube L x L x L 
 L=1.0
 
-nn=0 # index for global error
+gradientOfU_np = None       # numpy
+gradientOfU_fd = None       # findiff
+
+e_global_np = []
+e_global_fd = []
 for n in n_test:
+    print(n, "--")
     [dx, x] = lattice(L, n)
 
-    [u, gradientOfUAnalytic] = uAndGradientUAnalytic(x,L, uCubic, gradUCubic)
-    gradientOfU = Util.computeGradientU(u,dxArg=dx)
-    e_global[nn] = globalError(gradientOfU, gradientOfUAnalytic)
-    nn = nn+1
+    print("analytical ...", end='\r')
+    [u, gradientOfUAnalytic] = uAndGradientUAnalytic(x,L, uSin, gradUSin)
+    # [u, gradientOfUAnalytic] = uAndGradientUAnalytic(x,L, uCubic, gradUCubic)
+    print("analytical done")
+    
+    # compute 2nd order NumPy gradient
+    print("numpy ...", end='\r')
+    gradientOfU_np = Util.computeGradientU(u, dxArg=dx)
+    print("numpy done")
+    e_global_np.append(globalError(gradientOfU_np, gradientOfUAnalytic))
+    
+    # compute 4th order FinDiff gradient
+    print("findiff ...", end='\r')
+    gradientOfU_fd = Util.computeGradientU(u, dxArg=dx, use_np=False)
+    print("findiff done")
+    e_global_fd.append(globalError(gradientOfU_fd, gradientOfUAnalytic))
 
 import matplotlib.pyplot as plt
-plt.plot(n_test, e_global, label='error')
+
+# plot global error
+fig, ax = plt.subplots()
+if gradientOfU_np is not None:
+    ax.plot(n_test, e_global_np, label='error NumPy')
+if gradientOfU_fd is not None:
+    ax.plot(n_test, e_global_fd, label='error FinDiff')
+ax.set_xscale('log', base=2) 
+ax.set_yscale('log') 
 #plt.plot(x, y, label='sin(x)')
 #plt.plot(x, dy_dx, label="derivative of sin(x)")
-plt.legend()
-plt.xlabel('x')
-plt.ylabel('y')
-plt.title('Computing gradient of U on 3D Grid - Error')
-plt.show()
-    
+ax.legend()
+ax.set_xlabel('# nodes')
+ax.set_ylabel('error')
+ax.set_title('Computing gradient of U on 3D Grid - Error')
+ax.grid()
 
-  
+nh = n_test[2], n_test[-2]
+eh = [None, None]
+eh[0] = e_global_np[2]*0.9
+eh[1] = eh[0] * 10**-2
+
+ax.plot(nh, eh, ':', c='tab:blue')
+
+fig.show()
