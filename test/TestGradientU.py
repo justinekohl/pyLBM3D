@@ -106,11 +106,11 @@ def gradUCubic(x,y,z):
       ])
 
 ### Processing starts here
-# n_test = [8,16,32,64,128]     # 4th order FD needs more than 5 nodes
+# n_test = [8,16,32]     # 4th order FD needs more than 5 nodes
 n_test = np.logspace(3, 7, num=5, base=2, dtype=int)     # 4th order FD needs more than 5 nodes
 
 # test cube L x L x L 
-L=1.0
+L = 1.0
 
 gradientOfU_np = None       # numpy
 gradientOfU_fd = None       # findiff
@@ -146,21 +146,13 @@ if gradientOfU_np is not None:
     ax.plot(n_test, e_global_np, label='error NumPy')
 if gradientOfU_fd is not None:
     ax.plot(n_test, e_global_fd, label='error FinDiff')
+
 ax.set_xscale('log', base=2) 
 ax.set_yscale('log') 
-#plt.plot(x, y, label='sin(x)')
-#plt.plot(x, dy_dx, label="derivative of sin(x)")
 ax.legend()
 ax.set_xlabel('# nodes')
 ax.set_ylabel('error')
 ax.set_title('Computing gradient of U on 3D Grid - Error')
 ax.grid()
-
-nh = n_test[2], n_test[-2]
-eh = [None, None]
-eh[0] = e_global_np[2]*0.9
-eh[1] = eh[0] * 10**-2
-
-ax.plot(nh, eh, ':', c='tab:blue')
 
 fig.show()

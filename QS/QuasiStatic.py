@@ -1,5 +1,8 @@
 import numpy as np
 
+from findiff import Divergence
+
+
 def intitialize(rho0Arg,  wArg, mArg, nArg, oArg):
     '''
     returns the initial distribution functions (as equilibrium distributions), moments and displacement field
@@ -42,7 +45,7 @@ def firstSource(rhoArg, divSigmaArg):
     return g(rhoArg, divSigmaArg)
 
 
-def divOfSigma(sigmaArg, dxArg):
+def divOfSigmaNumpy(sigmaArg, dxArg):
     #TODO test for simple stress distribution and compare to analytic solution
     divOfSigma = np.zeros((len(sigmaArg), len(sigmaArg[0]), len(sigmaArg[0][0]),3), dtype=np.double)
 
@@ -90,6 +93,26 @@ def divOfSigma(sigmaArg, dxArg):
     divOfSigma[:,:,:,0] = gradientS11[0] + gradientS12[1] + gradientS13[2]
     divOfSigma[:,:,:,1] = gradientS21[0] + gradientS22[1] + gradientS23[2]
     divOfSigma[:,:,:,2] = gradientS31[0] + gradientS32[1] + gradientS33[2]
+
+    return divOfSigma
+
+
+def divOfSigma(sigmaArg, dxArg):
+    #TODO test for simple stress distribution and compare to analytic solution
+
+    div = Divergence(h=[dxArg, dxArg, dxArg], acc=4)    
+
+    nx, nz, ny, dimi, dimj = sigmaArg.shape
+    divOfSigma = np.empty((nx, ny, nz, dimj), dtype=np.double)
+    
+    sigma_tmp = np.empty((dimi, dimj, nx, ny, nz))
+    for i in range(dimi):
+        for j in range(dimj):
+            sigma_tmp[i,j,...] = sigmaArg[...,i,j]
+
+    divOfSigma[..., 0] = div(sigma_tmp[0, :, ...])
+    divOfSigma[..., 1] = div(sigma_tmp[1, :, ...])
+    divOfSigma[..., 2] = div(sigma_tmp[2, :, ...])
 
     return divOfSigma
 
