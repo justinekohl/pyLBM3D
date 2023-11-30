@@ -128,13 +128,13 @@ for n in n_test:
     
     # compute 2nd order NumPy gradient
     print("numpy ...", end='\r')
-    gradientOfU_np = Util.computeGradientU(u, dxArg=dx)
+    gradientOfU_np = Util.computeGradientUNumpy(u, dxArg=dx)
     print("numpy done")
     e_global_np.append(globalError(gradientOfU_np, gradientOfUAnalytic))
     
     # compute 4th order FinDiff gradient
     print("findiff ...", end='\r')
-    gradientOfU_fd = Util.computeGradientU(u, dxArg=dx, use_np=False)
+    gradientOfU_fd = Util.computeGradientU(u, dxArg=dx, acc=6)
     print("findiff done")
     e_global_fd.append(globalError(gradientOfU_fd, gradientOfUAnalytic))
 

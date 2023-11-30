@@ -9,8 +9,10 @@ import Util
 import QS.QuasiStatic as QS
 import QS.QuasiStaticBC as QSBC
 
+
 nameOfSimulation = "Block3D"
-pathToVTK = "E:/git/vtk/"
+# pathToVTK = "E:/git/vtk/"
+pathToVTK = "./vtk/"
 
 lam = 1.0
 mue = 1.0
@@ -21,7 +23,7 @@ j0 = np.zeros(3)
 
 # setting up lattice point positions
 ax = 1.0
-maxX = 10
+maxX = 16  #10
 maxY = maxX
 maxZ = maxX
 dx = ax/maxX  # spacing
@@ -36,10 +38,9 @@ dt = 1.0 / math.sqrt(3.0) * dx / cs
 c = dx / dt
 
 nu = lam / (2.0 * (lam + mue))
-omega = 1.0 # one should also work, 2.0 * cs ** 2 / ( cs ** 2 + 2 * nu) # TODO do you use this for solids als well (page 4)
+omega = 1.0     # one should also work, 2.0 * cs ** 2 / ( cs ** 2 + 2 * nu) # TODO do you use this for solids als well (page 4)
 tau = 1.0 / omega
 #tau = 0.55 * dt
-
 
 [cc, w] = SettingsModule.getLatticeVelocitiesWeights(c)
 
@@ -49,14 +50,35 @@ rho = Core.computeRho(f)
 #b = np.zeros((maxX, maxY, maxZ, 3), dtype=np.double) # TODO not needed
 
 
-tMax = 2.0
+tMax = 4.0
 t = 0.0
 k = int(0)
 
-
-
 outputFile = None
 pointIndices = [[maxX-1, maxY-1, maxZ-1], [maxX-1, maxY-1, maxZ-1], [0,0,0]]
+
+# BC ####################################
+def uBdFromCoordinates_const(coordinates):
+    clocal = 0.001  # TODO maybe ramping
+    nu = lam / (2.0 * (lam + mue))
+    return np.array([ clocal * coordinates[0], - nu * clocal * coordinates[1], - nu * clocal * coordinates[2] ])
+
+def uBdFromCoordinates_ramp(coordinates):
+    clocal = 0.001
+    # clocal = 0.001
+    if t < t0:      # smooth ramping for some initial time t0
+        clocal *= np.sin(t / t0 * np.pi / 2)**2
+    nu = lam / (2.0 * (lam + mue))
+    return np.array([ clocal * coordinates[0], - nu * clocal * coordinates[1], - nu * clocal * coordinates[2] ])
+
+def uBdFromCoordinates_zero(coordinates):
+    return np.zeros(3)
+
+# set the function for boundary conditions
+t0 = tMax * 0.8
+uBdFromCoordinates = uBdFromCoordinates_zero
+# End BC #################################
+
 
 while t <= tMax:
     fNew = np.zeros((maxX, maxY, maxZ, 27), dtype=np.double)
@@ -66,12 +88,6 @@ while t <= tMax:
     g = QS.g(rho, divSigma)
     v = QS.v(rho,j)
     gi = QS.gi(g,cc,w,rho,cs,v) # TODO this is cs = 1/sqrt(3)
-
-    # BC ####################################
-    def uBdFromCoordinates(coordinates):
-        clocal = 0.001  # TODO maybe ramping
-        nu = lam / (2.0 * (lam + mue))
-        return np.array([ clocal * coordinates[0], - nu * clocal * coordinates[1], - nu * clocal * coordinates[2] ])
 
     visited = np.zeros((maxX, maxY, maxZ), dtype=bool)
     # TODO for fixed BC use bounce back, halfway?
@@ -93,10 +109,6 @@ while t <= tMax:
     #zmax
     [f,u, visited] = QSBC.applyDirichletBoundaryConditions(f,dx,dt,rho0, rho, w,u,uBdFromCoordinates,visited,'z',maxZ-1)
     
-    # End BC #################################
-
-
-
     # collision and streaming
     fEq = QS.equilibriumDistribution(rho,w)
 
@@ -107,15 +119,15 @@ while t <= tMax:
     # compute displacement
     jOld = j
     j = Ex.j(Core.firstMoment(f, cc), dt, g)
-     # compute rho
+    # compute rho
     rho = Core.computeRho(f)
     u = QS.computeU(u, rho0, j, jOld, dt, v, rho) # TODO rho0 more stable or use rho?
     # TODO prevent overwriting at Boundary, why ux not constant for x = const.?
    
     # compute strain, stress, stress divergence
-    gradU = Util.computeGradientU(u,dx)
-    sigma = QS.sigmaFromDisplacement(gradU,lam,mue)
-    divSigma = QS.divOfSigma(sigma,dx)
+    gradU = Util.computeGradientU(u, dx, acc=8)
+    sigma = QS.sigmaFromDisplacement(gradU, lam, mue)
+    divSigma = QS.divOfSigma(sigma, dx)
 
     # Postprocessing ################
     PostProcessing.writeVTKMaster(k, nameOfSimulation, pathToVTK, t, xx, u, sigma)
@@ -123,7 +135,7 @@ while t <= tMax:
     for indices in pointIndices:
         uOut.append(u[indices[0], indices[1], indices[2]])
 
-    outputFile = PostProcessing.writeToFile(outputFile,"./DirichletQS.dis",uOut,t)
+    # outputFile = PostProcessing.writeToFile(outputFile,"./DirichletQS.dis",uOut,t)
     ######################
 
     k = k + 1

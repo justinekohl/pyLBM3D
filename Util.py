@@ -2,6 +2,9 @@ import numpy as np
 from findiff import Gradient, Divergence
 
 
+DEFAULT_ACC = 6
+
+
 def checkIfIndicesInArrayBounds(iArg, jArg, kArg, arrayArg):
     return iArg < len(arrayArg)  and iArg >= 0 and jArg < len(arrayArg[0]) and jArg >= 0 and kArg < len(arrayArg[0][0]) and kArg >= 0
 
@@ -31,23 +34,39 @@ def computeDivergenceUFromDisplacementField(uArg, dxArg):
 
     return divUOut
 
-def computeGradientU(uArg, dxArg, *, use_np=True):
+def computeGradientUNumpy(uArg, dxArg, *, use_np=True):
     uX = uArg[...,0]
     uY = uArg[...,1]
     uZ = uArg[...,2]
     nx, ny, nz = uX.shape
     gradU = np.empty((nx, ny, nz, 3, 3), dtype=np.double)
 
-    if not use_np:
-        grad = Gradient(h=[dxArg, dxArg, dxArg], acc=4)
+    gradientUx = np.gradient(uX, dxArg, dxArg, dxArg, edge_order=2)
+    gradientUy = np.gradient(uY, dxArg, dxArg, dxArg, edge_order=2)
+    gradientUz = np.gradient(uZ, dxArg, dxArg, dxArg, edge_order=2)
 
-        gradientUx = grad(uX)
-        gradientUy = grad(uY)
-        gradientUz = grad(uZ)
-    else:
-        gradientUx = np.gradient(uX, dxArg, dxArg, dxArg, edge_order=2)
-        gradientUy = np.gradient(uY, dxArg, dxArg, dxArg, edge_order=2)
-        gradientUz = np.gradient(uZ, dxArg, dxArg, dxArg, edge_order=2)
+    gradu_tmp = np.array((gradientUx, gradientUy, gradientUz))
+    for i in range(3):
+        for j in range(3):
+            gradU[...,i,j] = gradu_tmp[i,j,...]
+
+    return gradU
+
+def computeGradientU(uArg, dxArg, acc=None):
+    uX = uArg[...,0]
+    uY = uArg[...,1]
+    uZ = uArg[...,2]
+    nx, ny, nz = uX.shape
+    gradU = np.empty((nx, ny, nz, 3, 3), dtype=np.double)
+
+    if not acc:
+        acc = DEFAULT_ACC
+
+    grad = Gradient(h=[dxArg, dxArg, dxArg], acc=acc)
+
+    gradientUx = grad(uX)
+    gradientUy = grad(uY)
+    gradientUz = grad(uZ)
 
     # nx, ny, nz, *_ = uArg.shape
     gradu_tmp = np.array((gradientUx, gradientUy, gradientUz))

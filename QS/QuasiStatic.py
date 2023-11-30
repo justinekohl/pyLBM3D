@@ -2,6 +2,8 @@ import numpy as np
 
 from findiff import Divergence
 
+from Util import DEFAULT_ACC
+
 
 def intitialize(rho0Arg,  wArg, mArg, nArg, oArg):
     '''
@@ -97,8 +99,11 @@ def divOfSigmaNumpy(sigmaArg, dxArg):
     return divOfSigma
 
 
-def divOfSigma(sigmaArg, dxArg):
+def divOfSigma(sigmaArg, dxArg, acc=None):
     #TODO test for simple stress distribution and compare to analytic solution
+
+    if not acc:
+        acc = DEFAULT_ACC
 
     div = Divergence(h=[dxArg, dxArg, dxArg], acc=4)    
 

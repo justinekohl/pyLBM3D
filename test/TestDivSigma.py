@@ -155,17 +155,15 @@ for n in n_test:
   # [sigma, divOfSigmaAnalytic] = sigmaAndDivSigmaAnalytic(x,L, sigmaCubic, divSigmaCubic)
   [sigma, divOfSigmaAnalytic] = sigmaAndDivSigmaAnalytic(x, L, sigma10, divSigma10)
   
-  divOfSigma_fd = QS.divOfSigma(sigma, dx)                    ##### with gradient-function
-  e_global_fd.append(globalError(divOfSigma_fd, divOfSigmaAnalytic))
-  
-  divOfSigma_np = QS.divOfSigmaNumpy(sigma, dx)               ##### with findiff Divergence
+  divOfSigma_np = QS.divOfSigmaNumpy(sigma, dx)                 ##### with findiff Divergence
   e_global_np.append(globalError(divOfSigma_np, divOfSigmaAnalytic))
   
-  # divOfSigma_div = div.ComupteDivergence(sigma,dx)                ##### with finite difference schemes
-  # e_global_div.append(globalError(divOfSigma_div, divOfSigmaAnalytic))
-
-
-
+  divOfSigma_fd = QS.divOfSigma(sigma, dx, acc=6)               ##### with gradient-function
+  e_global_fd.append(globalError(divOfSigma_fd, divOfSigmaAnalytic))
+  
+  divOfSigma_div = div.ComupteDivergence(sigma, dx)             ##### with fd scheme
+  e_global_div.append(globalError(divOfSigma_div, divOfSigmaAnalytic))
+  
 import matplotlib.pyplot as plt
 # plot global error
 fig, ax = plt.subplots()
@@ -173,8 +171,8 @@ if divOfSigma_np is not None:
   ax.plot(n_test, e_global_np, label='error NumPy')
 if divOfSigma_fd is not None:
   ax.plot(n_test, e_global_fd, label='error FinDiff')
-# if divOfSigma_div is not None:
-#   ax.plot(n_test, e_global_div, label='error FD scheme')
+if divOfSigma_div is not None:
+  ax.plot(n_test, e_global_div, label='error FD scheme')
 
 ax.set_xscale('log', base=2) 
 ax.set_yscale('log') 
