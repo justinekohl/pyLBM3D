@@ -8,12 +8,21 @@ import Util
 
 import QS.QuasiStatic as QS
 import QS.QuasiStaticBC as QSBC
+import QS.ComputeGrad as Grad
+import QS.ComputeDiv as Div
 
 nameOfSimulation = "Block3D"
 pathToVTK = "E:/git/vtk/"
 
+
+
+#nu = 0.15 #poisson's ratio
+#moduleYoung = 200.0*pow(10.0, 9.0)
+
+#first_try
 lam = 1.0
 mue = 1.0
+nu = lam / (2.0 * (lam + mue))
 
 rho0 = 1.0
 P0 = np.zeros((3, 3))
@@ -21,7 +30,7 @@ j0 = np.zeros(3)
 
 # setting up lattice point positions
 ax = 1.0
-maxX = 10
+maxX = 50
 maxY = maxX
 maxZ = maxX
 dx = ax/maxX  # spacing
@@ -31,25 +40,31 @@ for i in range(0, len(xx)):
         for k in range(0, len(xx[0][0])):
             xx[i, j, k] = np.array([np.double(i) * dx, np.double(j) * dx, np.double(k) * dx], dtype=np.double)
 
+#constitutive law for isotropic solids: hooke's law with lame coefficients
+#lam = (moduleYoung*nu)/((1.0+nu)*(1.0-2.0*nu))
+#mue = moduleYoung/(2.0*(1.0+nu))
+# dt = 0.00005
+# moduleYoungLatticeUnits = moduleYoung*dx*dt*dt
+# lam = (moduleYoungLatticeUnits*nu)/((1.0+nu)*(1.0-2.0*nu))
+# mue = moduleYoungLatticeUnits/(2.0*(1.0+nu))
+
 cs = math.sqrt(mue/rho0)
 dt = 1.0 / math.sqrt(3.0) * dx / cs
 c = dx / dt
 
-nu = lam / (2.0 * (lam + mue))
 omega = 1.0 # one should also work, 2.0 * cs ** 2 / ( cs ** 2 + 2 * nu) # TODO do you use this for solids als well (page 4)
 tau = 1.0 / omega
 #tau = 0.55 * dt
 
-
 [cc, w] = SettingsModule.getLatticeVelocitiesWeights(c)
 
 [f, j, sigma, u] = QS.intitialize(rho0, w, maxX, maxY, maxZ)
-divSigma = QS.divOfSigma(sigma,dx)
+divSigma = Div.ComupteDivergence(sigma,dx)
+#divSigma = QS.divOfSigma(sigma,dx)
 rho = Core.computeRho(f)
 #b = np.zeros((maxX, maxY, maxZ, 3), dtype=np.double) # TODO not needed
 
-
-tMax = 2.0
+tMax = 0.001
 t = 0.0
 k = int(0)
 
@@ -71,6 +86,7 @@ while t <= tMax:
     def uBdFromCoordinates(coordinates):
         clocal = 0.001  # TODO maybe ramping
         nu = lam / (2.0 * (lam + mue))
+        #nu = 0.15 #poisson's ratio
         return np.array([ clocal * coordinates[0], - nu * clocal * coordinates[1], - nu * clocal * coordinates[2] ])
 
     visited = np.zeros((maxX, maxY, maxZ), dtype=bool)
@@ -113,9 +129,11 @@ while t <= tMax:
     # TODO prevent overwriting at Boundary, why ux not constant for x = const.?
    
     # compute strain, stress, stress divergence
-    gradU = Util.computeGradientU(u,dx)
+    #gradU = Util.computeGradientU(u,dx)
+    gradU = Grad.ComupteGradientU(u,dx)
     sigma = QS.sigmaFromDisplacement(gradU,lam,mue)
-    divSigma = QS.divOfSigma(sigma,dx)
+    #divSigma = QS.divOfSigma(sigma,dx)
+    divSigma = Div.ComupteDivergence(sigma,dx)
 
     # Postprocessing ################
     PostProcessing.writeVTKMaster(k, nameOfSimulation, pathToVTK, t, xx, u, sigma)
