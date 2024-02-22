@@ -382,7 +382,7 @@ def computeSigmaBd(sigmaBC, sigmaArg, ccArg, coordinateArg='x', coordinateValueA
                             if (not np.isnan(sigmaBC[ii,jj])):
                                 ## this location can be used to compute stress location dependent (similiarly for edges and corners)
                                 latticePointLocation = Util.getLocation(coordinateArg=coordinateArg, coordinateValueArg=coordinateValueArg,i=i, j=j, dx=dx)
-                                sigmaBd[i,j,l,ii,jj] = sigmaBdTransformationFunction(sigmaBC[ii,jj])
+                                sigmaBd[i,j,l,ii,jj] = sigmaBdTransformFunction(sigmaBC[ii,jj])
         return sigmaBd
 
     def computeSigmaBdWithoutExtrapolation(sigmaArg, ccArg, coordinateArg, coordinateValueArg):
