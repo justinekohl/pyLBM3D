@@ -94,3 +94,29 @@ def trace(eps):
             for k in range(0, len(eps[0][0])):
                 trEps[i,j,k] = eps[i,j,k,0,0] +  eps[i,j,k,1,1] + eps[i,j,k,2,2]
     return trEps
+
+
+def getLocation(i,j,k,dx):
+    '''
+     sets convention on how to interpret indices and determines location of point
+    '''
+    return np.array([np.double(i) * dx, np.double(j) * dx, np.double(k) * dx], dtype=np.double)
+
+
+def getLocation(coordinateArg,coordinateValueArg,i,j,dx):
+    if(coordinateArg == "x"):
+        return getLocation(coordinateValueArg,i,j,dx)
+    elif(coordinateArg == "y"):
+        return getLocation(i,coordinateValueArg,j,dx)
+    elif(coordinateArg == "z"):
+        return getLocation(i,j,coordinateValueArg,dx)
+
+def getLocation(coordinateArg,coordinateValueArg,coordinateArg2,coordinateValueArg2,i,dx):
+    if(coordinateArg == "x" and coordinateArg2 == "y"):
+        return getLocation(coordinateValueArg,coordinateValueArg2,i,dx)
+    elif(coordinateArg == "x" and coordinateArg2 == "z"):
+        return getLocation(coordinateValueArg,i, coordinateValueArg2,dx)
+    elif(coordinateArg == "y" and coordinateArg2 == "z"):
+        return getLocation(i,coordinateValueArg, coordinateValueArg2,dx)   
+
+    

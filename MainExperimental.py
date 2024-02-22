@@ -17,16 +17,12 @@ rho0 = 1.0
 P0 = np.zeros((3, 3))
 j0 = np.zeros(3)
 
-ax = 1.0
-maxX = 20
-maxY = maxX
-maxZ = maxX
-dx = ax/maxX  # spacing
+[dx, maxX, maxY, maxZ] = SettingsModule.getLatticeInformation()
 xx = np.zeros((maxX, maxY, maxZ, 3), dtype=np.double)
 for i in range(0, len(xx)):
     for j in range(0,len(xx[0])):
         for k in range(0, len(xx[0][0])):
-            xx[i, j, k] = np.array([np.double(i) * dx, np.double(j) * dx, np.double(k) * dx], dtype=np.double)
+            xx[i, j, k] = Util.getLocation(i,j,k,dx)
 
 cs = math.sqrt(mue/rho0)
 dt = 1.0 / math.sqrt(3.0) * dx / cs

@@ -13,3 +13,12 @@ def getLatticeVelocitiesWeights(c):
               1.0/216.0, 1.0/216.0, 1.0/216.0, 1.0/216.0, 1.0/216.0, 1.0/216.0, 1.0/216.0, 1.0/216.0], dtype = float)
     return [cc, w]
 
+
+def getLatticeInformation():
+    ax = 1.0
+    maxX = 20
+    maxY = maxX
+    maxZ = maxX
+    dx = ax/maxX  # spacing
+    return [dx, maxX, maxY, maxZ]
+
