@@ -103,7 +103,7 @@ def getLocation(i,j,k,dx):
     return np.array([np.double(i) * dx, np.double(j) * dx, np.double(k) * dx], dtype=np.double)
 
 
-def getLocation(coordinateArg,coordinateValueArg,i,j,dx):
+def getLocationSurface(coordinateArg,coordinateValueArg,i,j,dx):
     if(coordinateArg == "x"):
         return getLocation(coordinateValueArg,i,j,dx)
     elif(coordinateArg == "y"):
@@ -111,7 +111,7 @@ def getLocation(coordinateArg,coordinateValueArg,i,j,dx):
     elif(coordinateArg == "z"):
         return getLocation(i,j,coordinateValueArg,dx)
 
-def getLocation(coordinateArg,coordinateValueArg,coordinateArg2,coordinateValueArg2,i,dx):
+def getLocationEdge(coordinateArg,coordinateValueArg,coordinateArg2,coordinateValueArg2,i,dx):
     if(coordinateArg == "x" and coordinateArg2 == "y"):
         return getLocation(coordinateValueArg,coordinateValueArg2,i,dx)
     elif(coordinateArg == "x" and coordinateArg2 == "z"):

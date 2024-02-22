@@ -3,7 +3,7 @@ import copy
 import Util 
 import Settings
 
-dx = SettingsModule.getLatticeInformation()[0]
+dx = Settings.getLatticeInformation()[0]
 
 
 def intitialize(rho0Arg, csArg, ccArg, wArg, mArg, nArg, oArg, lamArg, mueArg):
@@ -381,7 +381,7 @@ def computeSigmaBd(sigmaBC, sigmaArg, ccArg, coordinateArg='x', coordinateValueA
                         for jj in range(0, len(sigmaBd[i][j][l][ii])):
                             if (not np.isnan(sigmaBC[ii,jj])):
                                 ## this location can be used to compute stress location dependent (similiarly for edges and corners)
-                                latticePointLocation = Util.getLocation(coordinateArg=coordinateArg, coordinateValueArg=coordinateValueArg,i=i, j=j, dx=dx)
+                                latticePointLocation = Util.getLocationSurface(coordinateArg=coordinateArg, coordinateValueArg=coordinateValueArg,i=i, j=j, dx=dx)
                                 sigmaBd[i,j,l,ii,jj] = sigmaBdTransformFunction(sigmaBC[ii,jj])
         return sigmaBd
 
