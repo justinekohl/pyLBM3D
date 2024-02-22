@@ -382,7 +382,7 @@ def computeSigmaBd(sigmaBC, sigmaArg, ccArg, coordinateArg='x', coordinateValueA
         :return: the current stress field at the plane in plane dimensions (k,l,27,3,3)
         '''
         sigmaAtCoordinate = BC.selectAtCoordinate(sigmaArg,coordinateArg,coordinateValueArg)
-        sigmaBd = np.zeros((len(sigmaArg),len(sigmaArg[0]),len(ccArg),3,3), dtype=np.double)
+        sigmaBd = np.zeros((len(sigmaAtCoordinate),len(sigmaAtCoordinate[0]),len(ccArg),3,3), dtype=np.double)
 
         for i in range(0, len(sigmaBd)):
             for j in range(0, len(sigmaBd[i])):

@@ -17,8 +17,8 @@ import QS.ComputeDiv as Div
 nameOfSimulation = "Block3D"
 pathToVTK = "E:/git/vtk/"
 
-dt = 0.0001 #Weicht ab vom Original, um Zeit zu sparen
-tMax = 0.02
+dt = 0.000001 #Weicht ab vom Original, um Zeit zu sparen
+tMax = 0.0002
 nodesPerMeter = 50 # erster Versuch mit nur 50
 lx = 1.0
 ly = 0.2
@@ -82,7 +82,7 @@ while t <= tMax:
     # BC ####################################
     def uBdFromCoordinates(coordinates):
         clocal = 0.001  # TODO maybe ramping
-        nu = lam / (2.0 * (lam + mue))
+        #nu = lam / (2.0 * (lam + mue))
         #nu = 0.15 #poisson's ratio
         return np.array([ clocal * coordinates[0], - nu * clocal * coordinates[1], - nu * clocal * coordinates[2] ])
 

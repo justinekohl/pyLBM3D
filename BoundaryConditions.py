@@ -265,7 +265,7 @@ def computePBd(sigmaBC, fArg, ccArg, cArg, uArg, dxArg, laArg, mueArg, rhoArg, r
 
 def computeRhoBdWithoutExtrapolation(rhoArg, ccArg, coordinateArg,coordinateValueArg):
     rhoAtCoordinate = selectAtCoordinate(rhoArg,coordinateArg,coordinateValueArg)
-    rhoBd = np.zeros((len(rhoArg),len(rhoArg[0]),len(ccArg)), dtype=np.double)
+    rhoBd = np.zeros((len(rhoAtCoordinate),len(rhoAtCoordinate[0]),len(ccArg)), dtype=np.double)
 
     for i in range(0, len(rhoBd)):
         for j in range(0, len(rhoBd[i])):
@@ -351,9 +351,9 @@ def getMissingDistributionFunctionIndicesAtEdge(fArg,coordinateArg1='x', coordin
     elif coordinateArg1 == 'y' and coordinateArg2 == 'z':
         if coordinateValueArg1 == 0 and coordinateValueArg2 == 0: # |--
             indicesStreamingOverEdge = [12,20,26]
-        elif coordinateValueArg1 == maxX and coordinateValueArg2 == 0: # |+-
+        elif coordinateValueArg1 == maxY and coordinateValueArg2 == 0: # |+-
             indicesStreamingOverEdge = [17, 21, 24]
-        elif coordinateValueArg1 == maxX and coordinateValueArg2 == maxY: # |++
+        elif coordinateValueArg1 == maxY and coordinateValueArg2 == maxY: # |++
             indicesStreamingOverEdge = [11,19,25]
         elif coordinateValueArg1 == 0 and coordinateValueArg2 == maxY: # |-+
             indicesStreamingOverEdge = [18,22,23]
@@ -402,7 +402,7 @@ def reduceSurfaceToEdge(surfaceArrayArg, coordinateArg1='x', coordinateArg2='y',
     elif coordinateArg1=='x' and coordinateArg2=='z':
         return selectAtCoordinate(surfaceArrayArg,'y', coordinateValueArg2)
     elif coordinateArg1=='y' and coordinateArg2=='z':
-        return selectAtCoordinate(surfaceArrayArg, 'x', coordinateValueArg2)
+        return selectAtCoordinate(surfaceArrayArg, 'y', coordinateValueArg2)
     else:
         raise Exception("Invalid input.")
 
