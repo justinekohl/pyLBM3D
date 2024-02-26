@@ -219,7 +219,7 @@ def identity(sigmaBdArg):
     '''
     return sigmaBdArg
 
-def applyNeumannBoundaryConditions(fArg, fCollArg, rhoArg, csArg, ccArg, wArg, sigmaBdArg, sigmaArg, coordinateArg='x', coordinateValueArg=0, boundaryRule = neumannBoundaryRule, sigmaTransformFunction = identity):
+def applyNeumannBoundaryConditions(fArg, fCollArg, rhoArg, csArg, ccArg, wArg, sigmaBdArg, sigmaArg, area, dxArg, coordinateArg='x', coordinateValueArg=0, boundaryRule = neumannBoundaryRule, sigmaTransformFunction = identity):
     '''
     :param fArg: the distribution function before the boundary conditions have been applied at the given plane in lattice dimensions (m,n,o)
     :param fCollArg: the distribution function after collision has been applied in lattice dimensions (m,n,o)
@@ -233,9 +233,9 @@ def applyNeumannBoundaryConditions(fArg, fCollArg, rhoArg, csArg, ccArg, wArg, s
     :param coordinateValueArg: the index identifying the plane (either 0 or max in the respective direction)
     :return: the distribution function after the boundary conditions have been applied at the given plane in lattice dimensions (m,n,o)
     '''
-    def computeFieldsForBounceBack(rhoArg, ccArg, coordinateArg, coordinateValueArg):
+    def computeFieldsForBounceBack(rhoArg, ccArg, coordinateArg, coordinateValueArg, area, dxArg):
         rhoBd = BC.computeRhoBdWithoutExtrapolation(rhoArg, ccArg, coordinateArg, coordinateValueArg)
-        sigmaBd = computeSigmaBd(sigmaBdArg, sigmaArg, ccArg, coordinateArg, coordinateValueArg)
+        sigmaBd = computeSigmaBd(sigmaBdArg, sigmaArg, ccArg, area, dxArg, coordinateArg, coordinateValueArg)
         return [rhoBd, sigmaBd]
 
 
@@ -250,7 +250,7 @@ def applyNeumannBoundaryConditions(fArg, fCollArg, rhoArg, csArg, ccArg, wArg, s
 
     #sigmaBd = computeSigmaBd(sigmaBdArg, sigmaArg, ccArg, coordinateArg, coordinateValueArg)
 
-    [rhoBd, sigmaBd] = computeFieldsForBounceBack(rhoArg, ccArg, coordinateArg, coordinateValueArg)
+    [rhoBd, sigmaBd] = computeFieldsForBounceBack(rhoArg, ccArg, coordinateArg, coordinateValueArg, area, dxArg)
 
     for i in range(0, len(fRelevant)):
         for j in range(0, len(fRelevant[0])):
@@ -269,7 +269,7 @@ def applyNeumannBoundaryConditions(fArg, fCollArg, rhoArg, csArg, ccArg, wArg, s
     return fOut
 
 
-def applyNeumannBoundaryConditionsAtEdge(fArg, fCollArg,  rhoArg,  csArg, ccArg,  wArg, sigmaBdArg1, sigmaBdArg2, sigmaArg, coordinateArg1='x', coordinateValueArg1=0, coordinateArg2='y', coordinateValueArg2=0, boundaryRule=neumannBoundaryRule):
+def applyNeumannBoundaryConditionsAtEdge(fArg, fCollArg,  rhoArg,  csArg, ccArg,  wArg, sigmaBdArg1, sigmaBdArg2, sigmaArg, area, dxArg, coordinateArg1='x', coordinateValueArg1=0, coordinateArg2='y', coordinateValueArg2=0, boundaryRule=neumannBoundaryRule):
     '''
 
     :param fArg: the distribution function before the boundary conditions have been applied at the given plane in lattice dimensions (m,n,o)
@@ -294,7 +294,7 @@ def applyNeumannBoundaryConditionsAtEdge(fArg, fCollArg,  rhoArg,  csArg, ccArg,
     indicesMissing = BC.getMissingDistributionFunctionIndicesAtEdge(fArg, coordinateArg1,coordinateValueArg1, coordinateArg2, coordinateValueArg2)
 
     sigmaBd = 1.0/2.0 * (sigmaBdArg1 + sigmaBdArg2)
-    sigmaBd = BC.reduceSurfaceToEdge(computeSigmaBd(sigmaBd, sigmaArg, ccArg, coordinateArg1, coordinateValueArg1), coordinateArg1, coordinateArg2,coordinateValueArg2)
+    sigmaBd = BC.reduceSurfaceToEdge(computeSigmaBd(sigmaBd, sigmaArg, ccArg, area, dxArg, coordinateArg1, coordinateValueArg1), coordinateArg1, coordinateArg2,coordinateValueArg2)
 
     for i in range(0, len(fRelevant)):
         for l in indicesMissing:
@@ -313,7 +313,7 @@ def applyNeumannBoundaryConditionsAtEdge(fArg, fCollArg,  rhoArg,  csArg, ccArg,
     return fOut
 
 
-def applyNeumannBoundaryConditionsAtCorner(fArg, fCollArg, rhoArg,  csArg, ccArg,  wArg, sigmaBdArg1, sigmaBdArg2, sigmaBdArg3, sigmaArg,  coordinateValueArg1=0, coordinateValueArg2=0, coordinateValueArg3=0, boundaryRule=neumannBoundaryRule):
+def applyNeumannBoundaryConditionsAtCorner(fArg, fCollArg, rhoArg,  csArg, ccArg,  wArg, sigmaBdArg1, sigmaBdArg2, sigmaBdArg3, sigmaArg, area, dxArg,  coordinateValueArg1=0, coordinateValueArg2=0, coordinateValueArg3=0, boundaryRule=neumannBoundaryRule):
     '''
 
     :param fArg: the distribution function before the boundary conditions have been applied at the given plane in lattice dimensions (m,n,o)
@@ -339,7 +339,7 @@ def applyNeumannBoundaryConditionsAtCorner(fArg, fCollArg, rhoArg,  csArg, ccArg
 
     sigmaBd = 1.0/3.0 * (sigmaBdArg1 + sigmaBdArg2 + sigmaBdArg3) # TODO average here okay?
     sigmaBd = BC.reduceSurfaceToCorner(
-        computeSigmaBd(sigmaBd, sigmaArg, ccArg, 'x', coordinateValueArg1), coordinateValueArg2, coordinateValueArg3)
+        computeSigmaBd(sigmaBd, sigmaArg, ccArg, area, dxArg, 'x', coordinateValueArg1), coordinateValueArg2, coordinateValueArg3)
 
     for l in indicesMissing:
         oL = BC.getOppositeLatticeDirection(l)
@@ -355,7 +355,7 @@ def applyNeumannBoundaryConditionsAtCorner(fArg, fCollArg, rhoArg,  csArg, ccArg
     return fOut
 
 
-def computeSigmaBd(sigmaBC, sigmaArg, ccArg, coordinateArg='x', coordinateValueArg=0, sigmaBdTransformFunction=identity):
+def computeSigmaBd(sigmaBC, sigmaArg, ccArg, area, dxArg, coordinateArg='x', coordinateValueArg=0, sigmaBdTransformFunction=identity):
     '''
 
     :param sigmaBC: the prescribed stress at this plane with nan's for undefined values (3,3)
@@ -366,7 +366,7 @@ def computeSigmaBd(sigmaBC, sigmaArg, ccArg, coordinateArg='x', coordinateValueA
     :param coordinateValueArg: the index identifying the plane (either 0 or max in the respective direction)
     :return: the stress field for all lattice links at all lattice points of a given plane, accounting for boundary conditions; in plane dimensions (k,l,27,3,3)
     '''
-    def applyTractionBoundaryConditions(sigmaBd, sigmaBC):
+    def applyTractionBoundaryConditions(sigmaBd, sigmaBC, area, dxArg):
         '''
 
         :param sigmaBd: the current stress field at the plane in plane dimensions (k,l,27,3,3)
@@ -381,8 +381,11 @@ def computeSigmaBd(sigmaBC, sigmaArg, ccArg, coordinateArg='x', coordinateValueA
                         for jj in range(0, len(sigmaBd[i][j][l][ii])):
                             if (not np.isnan(sigmaBC[ii,jj])):
                                 ## this location can be used to compute stress location dependent (similiarly for edges and corners)
-                                latticePointLocation = Util.getLocationSurface(coordinateArg=coordinateArg, coordinateValueArg=coordinateValueArg,i=i, j=j, dx=dx)
-                                sigmaBd[i,j,l,ii,jj] = sigmaBdTransformFunction(sigmaBC[ii,jj])
+                                latticePointLocation = Util.getLocationSurface(coordinateArg=coordinateArg, coordinateValueArg=coordinateValueArg,i=i, j=j, dx = dxArg)
+                                if (area[0,0] <= latticePointLocation[0] <= area[0,1]) and (area[1,0] <= latticePointLocation[1] <= area[1,1]) and (area[2,0] <= latticePointLocation[2] <= area[2,1]):
+                                    sigmaBd[i,j,l,ii,jj] = sigmaBdTransformFunction(sigmaBC[ii,jj])
+                                else: 
+                                    sigmaBd[i,j,l,ii,jj] = sigmaBdTransformFunction(0.0)
         return sigmaBd
 
     def computeSigmaBdWithoutExtrapolation(sigmaArg, ccArg, coordinateArg, coordinateValueArg):
@@ -403,7 +406,7 @@ def computeSigmaBd(sigmaBC, sigmaArg, ccArg, coordinateArg='x', coordinateValueA
                     sigmaBd[i,j,l] = sigmaAtCoordinate[i,j]
         return sigmaBd
 
-    sigmaBd = applyTractionBoundaryConditions(computeSigmaBdWithoutExtrapolation(sigmaArg,ccArg,coordinateArg,coordinateValueArg), sigmaBC)
+    sigmaBd = applyTractionBoundaryConditions(computeSigmaBdWithoutExtrapolation(sigmaArg,ccArg,coordinateArg,coordinateValueArg), sigmaBC, area, dxArg)
     return sigmaBd
 
 
