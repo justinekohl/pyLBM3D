@@ -131,9 +131,28 @@ while t <= tMax:
     fNew = Ex.applyNeumannBoundaryConditions(fNew, fColl, rho,  cs, cc, w, sigmaBCYMin, sigma,
                                                              'y', 0)
     
+    # apply stress only at top surface
+    area = np.array([[9*dx, 19*dx],
+                [7*dx, 7*dx], # this can go very wrong if rounding errors occur
+                [0.0, 7*dx]])
+
+    def applyStressOnlyAtArea(sigmaBd, latticePointLocation):
+        '''
+            this function returns sigmaBd if latticePointLication is in area ( area is not a good name here since it is more like a volume)
+            else return the zero stress tensor
+
+            area = [[xmin, xmax], [ymin, ymax], [zmin zmax]]
+        '''
+        if (area[0,0] <= latticePointLocation[0] <= area[0,1]) and (area[1,0] <= latticePointLocation[1] <= area[1,1]) and (area[2,0] <= latticePointLocation[2] <= area[2,1]):
+            return sigmaBd
+        else: 
+            return np.array([[0.0, 0.0, 0.0],
+                              [0.0, 0.0, 0.0],
+                              [0.0, 0.0, 0.0]])
+
     # apply BC at y=max
     fNew = Ex.applyNeumannBoundaryConditions(fNew, fColl, rho, cs, cc, w, sigmaBCYMax, sigma,
-                                                             'y', maxY - 1)
+                                                             'y', maxY - 1, sigmaTransformFunction=applyStressOnlyAtArea, dx=dx)
     
     # apply BC at x=0
     jBd = np.array([0, 0, 0])

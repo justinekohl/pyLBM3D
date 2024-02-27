@@ -3,7 +3,7 @@ import copy
 import Util 
 import Settings
 
-dx = Settings.getLatticeInformation()[0]
+#dx = Settings.getLatticeInformation()[0]
 
 
 def intitialize(rho0Arg, csArg, ccArg, wArg, mArg, nArg, oArg, lamArg, mueArg):
@@ -213,13 +213,13 @@ def bounceBackFsAtPlane(fArg, fCollArg, coordinateArg, coordinateValueArg):
     return [fCollRelevant, fRelevant, indicesMissing]
 
 
-def identity(sigmaBdArg):
+def identity(sigmaBdArg, latticePointLocationArg):
     '''
         A default transform function for sigma 
     '''
     return sigmaBdArg
 
-def applyNeumannBoundaryConditions(fArg, fCollArg, rhoArg, csArg, ccArg, wArg, sigmaBdArg, sigmaArg, coordinateArg='x', coordinateValueArg=0, boundaryRule = neumannBoundaryRule, sigmaTransformFunction = identity):
+def applyNeumannBoundaryConditions(fArg, fCollArg, rhoArg, csArg, ccArg, wArg, sigmaBdArg, sigmaArg, coordinateArg='x', coordinateValueArg=0, boundaryRule = neumannBoundaryRule, sigmaTransformFunction = identity, dx=0):
     '''
     :param fArg: the distribution function before the boundary conditions have been applied at the given plane in lattice dimensions (m,n,o)
     :param fCollArg: the distribution function after collision has been applied in lattice dimensions (m,n,o)
@@ -235,7 +235,7 @@ def applyNeumannBoundaryConditions(fArg, fCollArg, rhoArg, csArg, ccArg, wArg, s
     '''
     def computeFieldsForBounceBack(rhoArg, ccArg, coordinateArg, coordinateValueArg):
         rhoBd = BC.computeRhoBdWithoutExtrapolation(rhoArg, ccArg, coordinateArg, coordinateValueArg)
-        sigmaBd = computeSigmaBd(sigmaBdArg, sigmaArg, ccArg, coordinateArg, coordinateValueArg)
+        sigmaBd = computeSigmaBd(sigmaBdArg, sigmaArg, ccArg, coordinateArg, coordinateValueArg, sigmaBdTransformFunction=sigmaTransformFunction,dx=dx)
         return [rhoBd, sigmaBd]
 
 
@@ -355,7 +355,7 @@ def applyNeumannBoundaryConditionsAtCorner(fArg, fCollArg, rhoArg,  csArg, ccArg
     return fOut
 
 
-def computeSigmaBd(sigmaBC, sigmaArg, ccArg, coordinateArg='x', coordinateValueArg=0, sigmaBdTransformFunction=identity):
+def computeSigmaBd(sigmaBC, sigmaArg, ccArg, coordinateArg='x', coordinateValueArg=0, sigmaBdTransformFunction=identity, dx=0):
     '''
 
     :param sigmaBC: the prescribed stress at this plane with nan's for undefined values (3,3)
@@ -376,13 +376,14 @@ def computeSigmaBd(sigmaBC, sigmaArg, ccArg, coordinateArg='x', coordinateValueA
         sigmaBd = copy.deepcopy(sigmaBd)
         for i in range(0, len(sigmaBd)):
             for j in range(0, len(sigmaBd[i])):
+                ## this location can be used to compute stress location dependent (similiarly for edges and corners)
+                latticePointLocation = Util.getLocationSurface(coordinateArg=coordinateArg, coordinateValueArg=coordinateValueArg,i=i, j=j, dx=dx)
+                sigmaBCTransformed = sigmaBdTransformFunction(sigmaBC, latticePointLocation)
                 for l in range(0, len(sigmaBd[i][j])):
                     for ii in range(0, len(sigmaBd[i][j][l])):
                         for jj in range(0, len(sigmaBd[i][j][l][ii])):
-                            if (not np.isnan(sigmaBC[ii,jj])):
-                                ## this location can be used to compute stress location dependent (similiarly for edges and corners)
-                                latticePointLocation = Util.getLocationSurface(coordinateArg=coordinateArg, coordinateValueArg=coordinateValueArg,i=i, j=j, dx=dx)
-                                sigmaBd[i,j,l,ii,jj] = sigmaBdTransformFunction(sigmaBC[ii,jj])
+                            if (not np.isnan(sigmaBC[ii,jj])):    
+                                sigmaBd[i,j,l,ii,jj] = sigmaBCTransformed[ii,jj]
         return sigmaBd
 
     def computeSigmaBdWithoutExtrapolation(sigmaArg, ccArg, coordinateArg, coordinateValueArg):
