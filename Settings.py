@@ -14,11 +14,11 @@ def getLatticeVelocitiesWeights(c):
     return [cc, w]
 
 
-def getLatticeInformation():
-    ax = 1.0
-    maxX = 20
-    maxY = maxX
-    maxZ = maxX
-    dx = ax/maxX  # spacing
-    return [dx, maxX, maxY, maxZ]
+# def getLatticeInformation():
+#     ax = 1.0
+#     maxX = 20
+#     maxY = maxX
+#     maxZ = maxX
+#     dx = ax/maxX  # spacingcl
+#     return [dx, maxX, maxY, maxZ]
 
