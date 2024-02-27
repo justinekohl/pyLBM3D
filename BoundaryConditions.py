@@ -83,7 +83,7 @@ def selectInterpolationNeighbors(arrayArg,  ccArg, cArg, coordinateArg='x', coor
 
     arrayAtCoordinate = selectAtCoordinate(arrayArg, coordinateArg, coordinateValueArg)
     outNeighbors = np.zeros((len(arrayAtCoordinate), len(arrayAtCoordinate[0]), 27, 3), dtype=int) # saves i,j,k indices in arrayArg
-    outNeighbors.fill(np.nan)
+    outNeighbors.fill(-100) # an index that is not used
     for i in range(0, len(arrayAtCoordinate)):
         for j in range (0, len(arrayAtCoordinate[0])):
             for l in range(0, 27):
@@ -272,6 +272,8 @@ def computeRhoBdWithoutExtrapolation(rhoArg, ccArg, coordinateArg,coordinateValu
             for l in range(0, len(rhoBd[i][j])):
                 rhoBd[i,j,l] = rhoAtCoordinate[i,j]
     return rhoBd
+
+
 
 
 def applyNeumannBoundaryConditions(fArg, fCollArg, uArg , rhoArg, rho0Arg, csArg, ccArg, cArg, wArg, sigmaBdArg, dxArg, laArg, mueArg, coordinateArg='x', coordinateValueArg=0):
