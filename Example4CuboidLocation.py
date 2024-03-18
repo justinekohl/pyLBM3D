@@ -86,33 +86,77 @@ while t <= tMax:
     fNew = Core.stream(fColl, cc, c)
     #print(fNew)
 
-    #Sigma for each lattice point
-    if start < t < end:
-        sigmaBCxx = np.array([[np.nan, 0, np.nan],
-                    [0, -0.0001, 0],
-                    [np.nan, 0, np.nan]])
-        sigmaBC = ExPt2.SigmaOnBoundaryConditions(sigma, sigmaBCxx, ListOfTuples)
-        #m += 1
-    else: 
-        sigmaBCxx = np.array([[np.nan, 0.0, np.nan],
-            [0.0, 0.0, 0.0],
-            [np.nan, 0.0, np.nan]])
-        sigmaBC =  ExPt2.SigmaOnBoundaryConditions(sigma, sigmaBCxx, ListOfTuples)
+    sigmaXX = 0.001
+
+    sigmaBCXMin = np.array([[0.0, 0.0, 0.0],
+                            [0.0, np.nan, np.nan],
+                            [0.0, np.nan, np.nan]])
+    sigmaBCXMax = sigmaBCXMin
+
+    sigmaBCYMin = np.array([[np.nan, 0, np.nan],
+                        [0, 0, 0],
+                        [np.nan, 0, np.nan]])
+    sigmaBCYMax = np.array([[np.nan, 0, np.nan],
+                        [0, -sigmaXX, 0],
+                        [np.nan, 0, np.nan]])
+
+    sigmaBCZMin = np.array([[np.nan, np.nan, 0],
+                        [np.nan, np.nan, 0],
+                        [0.0, 0.0, 0.0]])
+    sigmaBCZMax = sigmaBCZMin
+
+
+    #edges
+    sigmaBCEdgeXY = np.array([[0.0, 0.0, 0.0],
+                              [0.0, 0.0, 0.0],
+                              [0.0, 0.0, np.nan]])
+
+    sigmaBCEdgeYZ = np.array([[np.nan, 0.0, 0.0],
+                            [0.0, 0.0, 0.0],
+                            [0.0, 0.0, 0.0]])
+
+    sigmaBCEdgeXZ = np.array([[0.0, 0.0, 0.0],
+                              [0.0, np.nan, 0.0],
+                              [0.0, 0.0, 0.0]])
+
+    # corner
+    sigmaBCCorner = np.array([[0.0, 0.0, 0.0],
+                              [0.0, 0.0, 0.0],
+                              [0.0, 0.0, 0.0]])
+    
+    # apply stress only at top surface
+    area = np.array([[9*dx, 19*dx],
+                [7*dx, 7*dx], # this can go very wrong if rounding errors occur
+                [0.0, 7*dx]])
+
+    def applyStressOnlyAtArea(sigmaBd, latticePointLocation):
+        '''
+            this function returns sigmaBd if latticePointLication is in area ( area is not a good name here since it is more like a volume)
+            else return the zero stress tensor
+
+            area = [[xmin, xmax], [ymin, ymax], [zmin zmax]]
+        '''
+        if (area[0,0] <= latticePointLocation[0] <= area[0,1]) and (area[1,0] <= latticePointLocation[1] <= area[1,1]) and (area[2,0] <= latticePointLocation[2] <= area[2,1]):
+            return sigmaBd
+        else: 
+            return np.array([[0.0, 0.0, 0.0],
+                              [0.0, 0.0, 0.0],
+                              [0.0, 0.0, 0.0]])
 
     # apply BC at z=0
-    fNew = ExPt2.applyNeumannBoundaryConditions(fNew, fColl, rho, cs, cc, w, sigmaBC, sigma, 'z', 0)
+    fNew = Ex.applyNeumannBoundaryConditions(fNew, fColl, rho, cs, cc, w, sigmaBCZMin, sigma, 'z', 0)
     
     # apply BC at z=max
-    fNew = ExPt2.applyNeumannBoundaryConditions(fNew, fColl, rho, cs, cc, w, sigmaBC, sigma,
+    fNew = Ex.applyNeumannBoundaryConditions(fNew, fColl, rho, cs, cc, w, sigmaBCZMax, sigma,
                                              'z', maxZ - 1)
     
     # apply BC at y=0
-    fNew = ExPt2.applyNeumannBoundaryConditions(fNew, fColl, rho,  cs, cc, w, sigmaBC, sigma,
+    fNew = Ex.applyNeumannBoundaryConditions(fNew, fColl, rho,  cs, cc, w, sigmaBCYMin, sigma,
                                                              'y', 0)
-    
+
     # apply BC at y=max
-    fNew = ExPt2.applyNeumannBoundaryConditions(fNew, fColl, rho, cs, cc, w, sigmaBC, sigma,
-                                                             'y', maxY - 1)
+    fNew = Ex.applyNeumannBoundaryConditions(fNew, fColl, rho, cs, cc, w, sigmaBCYMax, sigma,
+                                                             'y', maxY - 1, sigmaTransformFunction=applyStressOnlyAtArea, dx=dx)
     
     # apply BC at x=0
     jBd = np.array([0, 0, 0])
@@ -152,19 +196,22 @@ while t <= tMax:
     # apply BC at edge x = max, z = max
     fNew = Ex.applyDirichletBoundaryConditionsAtEdge(fNew, fColl, rho, cs, cc, c, w, jBd, 'x', maxX -1, 'z', maxZ - 1)
     
-    
     ### Neumann B.C.
     # apply BC at edge y = min, z = min
-    fNew = ExPt2.applyNeumannBoundaryConditionsAtEdge(fNew, fColl,  rho,  cs, cc,  w, sigmaBC, sigmaBC, sigma,  'y', 0, 'z', 0)
+    fNew = Ex.applyNeumannBoundaryConditionsAtEdge(fNew, fColl,  rho,  cs, cc,  w, sigmaBCEdgeYZ,
+                                                   sigmaBCEdgeYZ, sigma,  'y', 0, 'z', 0)
 
     # apply BC at edge y = min, z = max
-    fNew = ExPt2.applyNeumannBoundaryConditionsAtEdge(fNew, fColl,  rho,  cs, cc,  w, sigmaBC, sigmaBC, sigma,  'y', 0, 'z', maxZ-1)
+    fNew = Ex.applyNeumannBoundaryConditionsAtEdge(fNew, fColl,  rho,  cs, cc,  w, sigmaBCEdgeYZ ,
+                                                                   sigmaBCEdgeYZ, sigma,  'y', 0, 'z', maxZ-1)
 
     # apply BC at edge y = max, z = min
-    fNew = ExPt2.applyNeumannBoundaryConditionsAtEdge(fNew, fColl,  rho,  cs, cc,  w, sigmaBC, sigmaBC, sigma,  'y', maxY-1, 'z', 0)
+    fNew = Ex.applyNeumannBoundaryConditionsAtEdge(fNew, fColl,  rho,  cs, cc,  w, sigmaBCEdgeYZ ,
+                                                                   sigmaBCEdgeYZ, sigma,  'y', maxY-1, 'z', 0)
 
     # apply BC at edge y = max, z = max
-    fNew = ExPt2.applyNeumannBoundaryConditionsAtEdge(fNew, fColl,  rho,  cs, cc,  w, sigmaBC, sigmaBC, sigma, 'y', maxY-1, 'z', maxZ-1)
+    fNew = Ex.applyNeumannBoundaryConditionsAtEdge(fNew, fColl,  rho,  cs, cc,  w, sigmaBCEdgeYZ ,
+                                                                   sigmaBCEdgeYZ, sigma, 'y', maxY-1, 'z', maxZ-1)
     
     #Corner
 
@@ -192,8 +239,6 @@ while t <= tMax:
 
     # xmin, ymax, zmax
     fNew = Ex.applyDirichletBoundaryConditionsAtCorner(fNew, fColl, rho, cs, cc,  w, jBd,  0, maxY - 1, maxZ - 1)
-    
-
 
     f = fNew
 
@@ -204,4 +249,3 @@ while t <= tMax:
 if outputFile is not None:
     outputFile.close()
 print("End")
-

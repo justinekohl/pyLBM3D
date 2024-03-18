@@ -269,7 +269,7 @@ def applyNeumannBoundaryConditions(fArg, fCollArg, rhoArg, csArg, ccArg, wArg, s
     return fOut
 
 
-def applyNeumannBoundaryConditionsAtEdge(fArg, fCollArg,  rhoArg,  csArg, ccArg,  wArg, sigmaBdArg1, sigmaBdArg2, sigmaArg, coordinateArg1='x', coordinateValueArg1=0, coordinateArg2='y', coordinateValueArg2=0, boundaryRule=neumannBoundaryRule):
+def applyNeumannBoundaryConditionsAtEdge(fArg, fCollArg,  rhoArg,  csArg, ccArg,  wArg, sigmaBdArg1, sigmaBdArg2, sigmaArg, coordinateArg1='x', coordinateValueArg1=0, coordinateArg2='y', coordinateValueArg2=0, boundaryRule=neumannBoundaryRule, sigmaTransformFunction = identity, dx=0):
     '''
 
     :param fArg: the distribution function before the boundary conditions have been applied at the given plane in lattice dimensions (m,n,o)
@@ -294,7 +294,7 @@ def applyNeumannBoundaryConditionsAtEdge(fArg, fCollArg,  rhoArg,  csArg, ccArg,
     indicesMissing = BC.getMissingDistributionFunctionIndicesAtEdge(fArg, coordinateArg1,coordinateValueArg1, coordinateArg2, coordinateValueArg2)
 
     sigmaBd = 1.0/2.0 * (sigmaBdArg1 + sigmaBdArg2)
-    sigmaBd = BC.reduceSurfaceToEdge(computeSigmaBd(sigmaBd, sigmaArg, ccArg, coordinateArg1, coordinateValueArg1), coordinateArg1, coordinateArg2,coordinateValueArg2)
+    sigmaBd = BC.reduceSurfaceToEdge(computeSigmaBd(sigmaBd, sigmaArg, ccArg, coordinateArg1, coordinateValueArg1, sigmaBdTransformFunction=sigmaTransformFunction,dx=dx), coordinateArg1, coordinateArg2,coordinateValueArg2)
 
     for i in range(0, len(fRelevant)):
         for l in indicesMissing:
@@ -313,7 +313,7 @@ def applyNeumannBoundaryConditionsAtEdge(fArg, fCollArg,  rhoArg,  csArg, ccArg,
     return fOut
 
 
-def applyNeumannBoundaryConditionsAtCorner(fArg, fCollArg, rhoArg,  csArg, ccArg,  wArg, sigmaBdArg1, sigmaBdArg2, sigmaBdArg3, sigmaArg,  coordinateValueArg1=0, coordinateValueArg2=0, coordinateValueArg3=0, boundaryRule=neumannBoundaryRule):
+def applyNeumannBoundaryConditionsAtCorner(fArg, fCollArg, rhoArg,  csArg, ccArg,  wArg, sigmaBdArg1, sigmaBdArg2, sigmaBdArg3, sigmaArg,  coordinateValueArg1=0, coordinateValueArg2=0, coordinateValueArg3=0, boundaryRule=neumannBoundaryRule, sigmaTransformFunction = identity, dx=0):
     '''
 
     :param fArg: the distribution function before the boundary conditions have been applied at the given plane in lattice dimensions (m,n,o)
@@ -339,7 +339,7 @@ def applyNeumannBoundaryConditionsAtCorner(fArg, fCollArg, rhoArg,  csArg, ccArg
 
     sigmaBd = 1.0/3.0 * (sigmaBdArg1 + sigmaBdArg2 + sigmaBdArg3) # TODO average here okay?
     sigmaBd = BC.reduceSurfaceToCorner(
-        computeSigmaBd(sigmaBd, sigmaArg, ccArg, 'x', coordinateValueArg1), coordinateValueArg2, coordinateValueArg3)
+        computeSigmaBd(sigmaBd, sigmaArg, ccArg, 'x', coordinateValueArg1, sigmaBdTransformFunction=sigmaTransformFunction,dx=dx), coordinateValueArg2, coordinateValueArg3)
 
     for l in indicesMissing:
         oL = BC.getOppositeLatticeDirection(l)
