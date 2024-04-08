@@ -8,7 +8,7 @@ import Util
 import os
 
 nameOfSimulation = "Block3D"
-pathToVTK = "./vtk5/"
+pathToVTK = "./vtk6/"
 
 lam = 1.0
 mue = 1.0
@@ -137,7 +137,7 @@ while t <= tMax:
 
     
     M_t = 1.0
-    tau0 = M_t/((1/9)*((Util.getLocation(0,maxY,0,dx)[1])**2)*(Util.getLocation(0,0,maxZ,dx)[2]))
+    tau0 = M_t/((1/3)*((Util.getLocation(0,maxY,0,dx)[1])**2)*(Util.getLocation(0,0,maxZ,dx)[2]))
     #Util.getLocation(0,maxY,0,dx)[1]
     def torsion(sigmaBC, latticePointLocation):
         yMax = Util.getLocation(0,maxY,0,dx)[1]
@@ -145,7 +145,7 @@ while t <= tMax:
         y = latticePointLocation[1]
         z = latticePointLocation[2]
         #tauXZ = M_t/(((-z**2/zMax) + z)*(1.0/6.0)*yMax**2) * 2.0*y/yMax * (-(z**2/zMax**2) + (z/zMax)) #M_t vorgegeben, nicht richtig!
-        tauXZ = tau0 * (2.0*y/yMax - 1.0) * 4.0 * (-(z**2/zMax**2) + (z/zMax)) #tau0 vorgegeben
+        tauXZ = tau0 * (-(math.sin((y/yMax)*2.0*math.pi))) * 4.0 * (-(z**2/zMax**2) + (z/zMax)) #tau0 vorgegeben
         return np.array([[0.0, 0.0, tauXZ],
                             [0.0, np.nan, np.nan],
                             [tauXZ, np.nan, np.nan]]) 
