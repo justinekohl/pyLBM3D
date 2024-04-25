@@ -6,6 +6,8 @@ import PostProcessing
 import Core
 import Util
 import os
+import test.Verdrehwinkel as Winkel
+import matplotlib.pyplot as plt
 
 nameOfSimulation = "Block3D"
 pathToVTK = "./vtk6/"
@@ -18,7 +20,7 @@ P0 = np.zeros((3, 3))
 j0 = np.zeros(3)
 
 ax = 1.0
-maxX = 30
+maxX = 20
 maxY = 8
 maxZ = 8
 dx = ax/maxX  # spacing
@@ -47,11 +49,12 @@ tau = 0.55 * dt
 b = np.zeros((maxX, maxY, maxZ, 3), dtype=np.double)
 
 
-tMax = 2.0
+tMax = 3.0
 t = 0.0
 k = int(0)
 
-
+m = 0
+angle_list = []
 
 outputFile = None
 pointIndices = [[maxX-1, maxY-1, maxZ-1], [maxX-1, 15, 15], [10,10,10]]
@@ -67,6 +70,9 @@ while t <= tMax:
     u = Ex.computeU(u, rho0, j, jOld, dt)
 
     PostProcessing.writeVTKMaster(k, nameOfSimulation, pathToVTK, t, xx, u, sigma)
+    
+    m, alpha = Winkel.twist_angle(u, xx, m)
+    angle_list.append(alpha)
 
     # uOut = []
     # for indices in pointIndices:
@@ -136,7 +142,7 @@ while t <= tMax:
                 [3*dx, 3*dx]])
 
     
-    M_t = 1.0
+    M_t = 0.002
     tau0 = M_t/((1/3)*((Util.getLocation(0,maxY,0,dx)[1])**2)*(Util.getLocation(0,0,maxZ,dx)[2]))
     #Util.getLocation(0,maxY,0,dx)[1]
     def torsion(sigmaBC, latticePointLocation):
@@ -283,34 +289,15 @@ while t <= tMax:
     print(k)
     t = t + dt
 
-# def einfacheregression(regY, regZ):
-#     averagey = sum(regY) / len(regY)
-#     averagez = sum(regZ) / len(regZ)
-#     summe1 = 0
-#     summe2 = 0
-#     for i in regY:
-#         for k in regZ:
-#             summe1 += (i - averagey) * (k - averagez)
-#             summe2 += (k - averagez)**2
-#     steigung = summe1/summe2
-    
-#     yachsenabschnitt = averagey - steigung * averagez
-    
-#     print(steigung)
-#     phi = math.tan(steigung)
-    
-#     return phi
 
-# regY = []
-# regZ = []
-# for zi in range(0,maxZ-1):
-#     z = Util.getLocation(maxX, (maxY/2 - 1), zi, dx)[2]
-#     y = Util.getLocation(maxX, (maxY/2 - 1), zi, dx)[1]
-#     regZ.append(z)
-#     regY.append(y)
-
-# Winkel = einfacheregression(regY,regZ)
-# print(Winkel)
+#plt.plot(angle_list, 'bo')
+plt.plot(angle_list)
+plt.plot(min(angle_list))
+#plt.show()
+xy=(angle_list.index(min(angle_list)), min(angle_list))
+plt.annotate('(%s, %s)' % xy, xy=xy)
+plt.savefig('E:\git2.0\savepngress\Winkel.png')
+plt.close()
 
 if outputFile is not None:
     outputFile.close()

@@ -144,6 +144,7 @@ while t <= tMax:
         zMax = Util.getLocation(0,0,maxZ,dx)[2]
         y = latticePointLocation[1]
         z = latticePointLocation[2]
+        #print(latticePointLocation)
         #tauXZ = M_t/(((-z**2/zMax) + z)*(1.0/6.0)*yMax**2) * 2.0*y/yMax * (-(z**2/zMax**2) + (z/zMax)) #M_t vorgegeben, nicht richtig!
         tauXZ = tau0 * (2.0*y/yMax - 1.0) * 4.0 * (-(z**2/zMax**2) + (z/zMax)) #tau0 vorgegeben
         return np.array([[0.0, 0.0, tauXZ],
@@ -283,34 +284,6 @@ while t <= tMax:
     print(k)
     t = t + dt
 
-# def einfacheregression(regY, regZ):
-#     averagey = sum(regY) / len(regY)
-#     averagez = sum(regZ) / len(regZ)
-#     summe1 = 0
-#     summe2 = 0
-#     for i in regY:
-#         for k in regZ:
-#             summe1 += (i - averagey) * (k - averagez)
-#             summe2 += (k - averagez)**2
-#     steigung = summe1/summe2
-    
-#     yachsenabschnitt = averagey - steigung * averagez
-    
-#     print(steigung)
-#     phi = math.tan(steigung)
-    
-#     return phi
-
-# regY = []
-# regZ = []
-# for zi in range(0,maxZ-1):
-#     z = Util.getLocation(maxX, (maxY/2 - 1), zi, dx)[2]
-#     y = Util.getLocation(maxX, (maxY/2 - 1), zi, dx)[1]
-#     regZ.append(z)
-#     regY.append(y)
-
-# Winkel = einfacheregression(regY,regZ)
-# print(Winkel)
 
 if outputFile is not None:
     outputFile.close()
